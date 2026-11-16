@@ -79,6 +79,7 @@ svg text{fill:var(--mu);font-size:10px}
 .g2>*,.g3>*{min-width:0}
 .sw{display:flex;flex-wrap:wrap;gap:8px 24px;align-items:center;font-size:13px}.sw label{display:flex;gap:7px;align-items:center;cursor:pointer}.sw input[type=checkbox]{width:16px;height:16px;padding:0;margin:0;accent-color:var(--ac)}.sw input:disabled+span,.sw label:has(input:disabled){opacity:.55;cursor:default}
 #upbox[hidden]{display:none}
+#upd[hidden],#repd[hidden]{display:none}#upd{margin-bottom:12px}button.bs{background:var(--bg);color:var(--tx);border:1px solid var(--bd)}#reptb td.bad{font-weight:600}
 </style></head><body>
 <noscript>ต้องเปิดใช้ JavaScript เพื่อแสดงแดชบอร์ดนี้</noscript><div class="wrap">
 <div class="top">
@@ -86,6 +87,20 @@ svg text{fill:var(--mu);font-size:10px}
  <div style="text-align:right"><div id="upbox" hidden><label class="ub" for="up">⬆ Upload File Excel (.xlsx / .csv)</label><input type="file" id="up" accept=".xlsx,.xls,.csv" hidden>
   <div class="sub" style="margin-top:4px">โหมดอัปเดตข้อมูล (#Update) · ข้อมูลที่อัปโหลดแสดงเฉพาะในเบราว์เซอร์นี้</div></div>
  <div class="sub" id="fn"></div></div>
+</div>
+<div class="card" id="upd" hidden>
+ <div class="ch"><h2>โหมดอัปเดตข้อมูล</h2><span class="note" id="updst" style="margin:0"></span></div>
+ <details id="repd" hidden open><summary><b>ผลการแมปคอลัมน์</b> <span class="note" id="repsum" style="margin:0"></span></summary><div class="scroll" style="margin-top:6px"><table id="reptb" style="min-width:560px"></table></div></details>
+ <div class="tb" style="margin-top:10px">
+  <div><label>GitHub repo (owner/repo)</label><input id="ghr" placeholder="เช่น myname/dtac-dashboard" autocomplete="off"></div>
+  <div><label>ตำแหน่งไฟล์ข้อมูลใน repo</label><input id="ghp" value="data.json" autocomplete="off"></div>
+  <div><label>GitHub Token (สิทธิ์ Contents: Read and write)</label><input id="ght" type="password" autocomplete="off" placeholder="github_pat_…"></div></div>
+ <div class="sw"><label><input type="checkbox" id="ghrem"><span>จำ Token ไว้ในเบราว์เซอร์นี้</span></label><label><input type="checkbox" id="ghdet"><span>รวมรายละเอียดรายเบอร์ (SUBR_NUMB, AGING_DAY …) ในไฟล์ที่เผยแพร่</span></label></div>
+ <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button id="ghsave">บันทึกให้ทุกคนเห็น (GitHub)</button><button id="ghdl" class="bs">ดาวน์โหลด data.json</button></div>
+ <div class="note" id="ghmsg" style="font-weight:600"></div>
+ <div class="note">ขั้นตอน: 1) กด Upload File Excel ที่มุมขวาบน 2) ตรวจผลแมปคอลัมน์ด้านบน 3) กรอก repo และ Token แล้วกด "บันทึกให้ทุกคนเห็น" · ระบบจะบันทึกเป็นไฟล์ data.json ใน repo และทุกคนที่เปิดลิงก์จะเห็นข้อมูลล่าสุด (หลัง GitHub Pages deploy ประมาณ 1–2 นาที) · ถ้าไม่ใช้ Token กด "ดาวน์โหลด data.json" แล้วนำไปวางทับในหน้า repo เอง</div>
+ <div class="note">Token: สร้างที่ GitHub → Settings → Developer settings → Fine-grained tokens เลือกเฉพาะ repo นี้ และสิทธิ์ Contents = Read and write · Token ไม่ถูกเก็บในไฟล์ HTML (เก็บในเบราว์เซอร์นี้เมื่อติ๊ก "จำ Token" เท่านั้น)</div>
+ <div class="note">ความเป็นส่วนตัว: ถ้า repo เป็น Public ทุกคนดาวน์โหลด data.json ได้ (มีชื่อพนักงาน สาขา แพ็กเกจ และตัวเลข) และถ้าติ๊ก "รวมรายละเอียดรายเบอร์" จะมีเลขเบอร์ด้วย</div>
 </div>
 <div class="card filters">
  <div><label>วันที่เริ่ม</label><select id="fd1"></select></div>
@@ -9858,20 +9873,44 @@ let TOT=null,TG={},sk="of",sd=1,DET=[],ST=null,DF={coc:null,ag:null},PG=0,dsk="k
 function prep(){R=D.rows.map(r=>({d:r[0],a:r[1],s:r[2],e:r[3],t:r[4],rn:r[5],ot:r[6],on:r[7],pk:r[8],rt:r[9],sv:r[10],un:r[11],pp:r[12],rs:r[13],ru:r[14],rp:r[15],ts:r[16]||0,ab:r[17]==null?-1:r[17]}));DEADS=new Set((D.rsn||[]).map((n,i)=>/เสียชีวิต/.test(n)?i:-1).filter(i=>i>=0));if(!D.tshop)D.tshop=["(ไม่ระบุ)"];mkDet()}
 function mkDet(){if(!D.det){D.sim=1;D.det=[];for(const x of R)for(const [c,s,a] of [[x.sv,"sv",null],[x.un,"un","ru"],[x.pp,"pp","rp"]])for(let i=0;i<c;i++)D.det.push({d:x.d,a:x.a,s:x.s,e:x.e,t:x.t,rn:x.rn,ot:x.ot,on:x.on,pk:x.pk,rt:x.rt,ts:x.ts,ab:x.ab,st:s,kd:D.dates[x.d],sub:null,ag:null,coc:null,rv:s==="sv"?x.rs/c:null,chn:a?x[a]/c:null})}
  DET=D.det;DET.forEach((x,i)=>x.i=i)}
-function fromRaw(rows){
- if(!rows.length||!("RET_DT" in rows[0])||!("RET_STTS" in rows[0]))return null;
- const num=v=>{v=parseFloat(v);return isFinite(v)?v:0},S=v=>v==null||String(v).trim()===""?"(ไม่ระบุ)":String(v).trim();
- const iso=v=>v instanceof Date?new Date(v-v.getTimezoneOffset()*6e4).toISOString().slice(0,10):typeof v==="number"?new Date(Math.round((v-25569)*864e5)).toISOString().slice(0,10):String(v).slice(0,10);
- const rec=[],kdv=v=>v==null||v===""?null:(v instanceof Date?iso(v):String(v).trim()),nn=v=>{if(v==null)return null;const x=parseFloat(String(v).replace(/,/g,""));return isFinite(x)?x:null},KM={};Object.keys(rows[0]).forEach(k=>KM[String(k).trim().toUpperCase().replace(/[\s.]+/g,"_")]=k);const gv=(r,...ns)=>{for(const n of ns){const k=KM[n];if(k!==undefined&&r[k]!=null&&String(r[k]).trim()!=="")return r[k]}return null},ts=v=>v==null?null:String(v).trim();
- for(const r of rows){const st=String(r.RET_STTS||"").toLowerCase().trim();let m;
-  if(st==="retain"||st==="save")m=[1,0,0];else if(st==="unretain")m=[0,1,0];else if(st.startsWith("post"))m=[0,0,1];else continue;
-  const ww=r.AREA_WW,ar=ww&&ww!=="-"?String(ww):(r.AREA_DB7&&r.AREA_DB7!=="-"?"DB7 - "+r.AREA_DB7:S(r.AREA)),ch=num(r.DOM_ARPU_AVG3M??r.Churn);
-  rec.push([iso(r.RET_DT),ar,S(r.SHOP_NAME),S(r.EMP_NAME??r.CRTD_BY),S(r.SHOP_TYPE),S(r.RET_RSN_DESC),S(r.OFFER_TYPE),S(r.OFFER_NAME),S(r.CURR_PKG_NM),S(r.RET_TYPE_DESC),m,m[0]?num(r.REV_SAVE):0,m[0]?0:ch,{kd:kdv(gv(r,"RET_TM_KEY_DAY"))??iso(r.RET_DT),sub:ts(gv(r,"SUBR_NUMB")),ag:nn(gv(r,"AGING_DAY","AGEING_DAY","AGING_DAYS","AGING")),coc:ts(gv(r,"RET_COC_DESC")),rv:nn(gv(r,"REV_SAVE")),chn:ch,tsn:(v=>v==null?"(ไม่ระบุ)":String(v).trim())(gv(r,"TYPE_SHOP","TYPESHOP"))}])}
- if(!rec.length)return null;
- const F=["dates","area","shop","emp","type","rsn","otype","oname","pkg","rtype"],o={},ix=F.map((f,i)=>{const v=[...new Set(rec.map(r=>r[i]))].sort();o[f]=v;return new Map(v.map((x,j)=>[x,j]))}),g=new Map(),tl=[...new Set(rec.map(r=>r[13].tsn))].sort(),tix=new Map(tl.map((x,j)=>[x,j]));o.tshop=tl;o.hasAge=rec.some(r=>r[13].ag!=null);
- for(const r of rec){const k=F.map((_,i)=>ix[i].get(r[i])),ab=abOf(r[13].ag),key=k.join("|")+"|"+tix.get(r[13].tsn)+"|"+ab;let a=g.get(key);if(!a)g.set(key,a=[...k,0,0,0,0,0,0,tix.get(r[13].tsn),ab]);
-  a[10]+=r[10][0];a[11]+=r[10][1];a[12]+=r[10][2];a[13]+=r[11];if(r[10][1])a[14]+=r[12];if(r[10][2])a[15]+=r[12]}
- o.rows=[...g.values()].map(a=>a.map((x,i)=>i>12?Math.round(x*100)/100:x));o.det=rec.map(r=>{const k=F.map((_,i)=>ix[i].get(r[i]));return{d:k[0],a:k[1],s:k[2],e:k[3],t:k[4],rn:k[5],ot:k[6],on:k[7],pk:k[8],rt:k[9],st:r[10][0]?"sv":r[10][1]?"un":"pp",ts:tix.get(r[13].tsn),ab:abOf(r[13].ag),...r[13]}});return o}
+ const nk=s=>String(s==null?"":s).trim().toUpperCase().replace(/[^A-Z0-9\u0E00-\u0E7F]+/g,"_").replace(/^_+|_+$/g,""),
+ SPEC={dt:["RET_DT","RET_DATE","RETENTION_DATE","DATE"],kd:["RET_TM_KEY_DAY","RET_TM_KEY","TM_KEY_DAY"],st:["RET_STTS","RET_STATUS","RET_STT","RETENTION_STATUS","STATUS"],
+  aww:["AREA_WW","AREAWW","WW_AREA"],adb:["AREA_DB7","AREADB7","DB7_AREA"],ar:["AREA"],shop:["SHOP_NAME","SHOP","BRANCH_NAME","BRANCH"],
+  emp:["EMP_NAME","EMPLOYEE_NAME","EMP","STAFF_NAME"],emp2:["CRTD_BY","CREATED_BY"],type:["SHOP_TYPE","SHOPTYPE"],ts:["TYPE_SHOP","TYPESHOP"],
+  rsn:["RET_RSN_DESC","RET_REASON_DESC","RET_REASON","REASON","RSN_DESC"],ot:["OFFER_TYPE"],on:["OFFER_NAME"],
+  pk:["CURR_PKG_NM","CURRENT_PKG_NM","CURR_PKG_NAME","PKG_NM","PKG_NAME","PACKAGE","PACKAGE_NAME"],rt:["RET_TYPE_DESC","RET_TYPE"],
+  rv:["REV_SAVE","REVENUE_SAVE"],ch:["DOM_ARPU_AVG3M","CHURN"],ag:["AGING_DAY","AGEING_DAY","AGING_DAYS","AGEING_DAYS","AGING","AGEING"],
+  sub:["SUBR_NUMB","SUBR_NUM","SUBR_NO","MSISDN"],coc:["RET_COC_DESC","COC_DESC","RET_COC"]};
+ function fromRaw(rows){
+  if(!rows||!rows.length)return null;
+  const KM={};Object.keys(rows[0]).forEach(k=>{const n=nk(k);if(!(n in KM))KM[n]=k});
+  const has=key=>SPEC[key].some(n=>n in KM),src=key=>{for(const n of SPEC[key])if(n in KM)return KM[n];return null};
+  if(!has("st")||!(has("dt")||has("kd")))return null;
+  const hit={},gv=(r,key)=>{for(const n of SPEC[key]){const k=KM[n];if(k!==undefined){const v=r[k];if(v!=null&&String(v).trim()!==""){hit[key]=(hit[key]||0)+1;return v}}}return null},
+  num=v=>{const x=parseFloat(String(v==null?"":v).replace(/,/g,""));return isFinite(x)?x:0},nn=v=>{if(v==null)return null;const x=parseFloat(String(v).replace(/,/g,""));return isFinite(x)?x:null},
+  S=v=>v==null||String(v).trim()===""?"(ไม่ระบุ)":String(v).trim(),ts=v=>v==null?null:String(v).trim(),p2=n=>String(n).padStart(2,"0"),
+  iso=v=>{if(v instanceof Date)return isFinite(v)?new Date(v-v.getTimezoneOffset()*6e4).toISOString().slice(0,10):"";
+   if(typeof v==="number"){if(v>19000101&&v<21001231)return String(v).slice(0,4)+"-"+String(v).slice(4,6)+"-"+String(v).slice(6,8);return new Date(Math.round((v-25569)*864e5)).toISOString().slice(0,10)}
+   const s=String(v).trim();let m=s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/);if(m){let y=+m[1];if(y>2400)y-=543;return y+"-"+p2(m[2])+"-"+p2(m[3])}
+   m=s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})/);if(m){let y=+m[3];if(y>2400)y-=543;return y+"-"+p2(m[2])+"-"+p2(m[1])}
+   m=s.match(/^(\d{4})(\d{2})(\d{2})$/);if(m)return m[1]+"-"+m[2]+"-"+m[3];return s.slice(0,10)},
+  kdv=v=>v==null||v===""?null:(v instanceof Date?iso(v):String(v).trim());
+  const rec=[];let skipped=0;
+  for(const r of rows){const s=String(gv(r,"st")??"").toLowerCase().replace(/[^a-z]/g,"");let m;
+   if(s.startsWith("unretain"))m=[0,1,0];else if(s.startsWith("retain")||s.startsWith("save"))m=[1,0,0];else if(s.startsWith("post"))m=[0,0,1];else{skipped++;continue}
+   const dv=gv(r,"dt"),kv=gv(r,"kd"),date=dv!=null?iso(dv):kv!=null?iso(kv):"";
+   if(!/^\d{4}-\d{2}-\d{2}$/.test(date)){skipped++;continue}
+   const ww=gv(r,"aww"),db=gv(r,"adb"),w=ww==null?"":String(ww).trim(),d7=db==null?"":String(db).trim(),ar=w&&w!=="-"?w:(d7&&d7!=="-"?"DB7 - "+d7:S(gv(r,"ar"))),ch=num(gv(r,"ch")),rvv=gv(r,"rv");
+   rec.push([date,ar,S(gv(r,"shop")),S(gv(r,"emp")??gv(r,"emp2")),S(gv(r,"type")),S(gv(r,"rsn")),S(gv(r,"ot")),S(gv(r,"on")),S(gv(r,"pk")),S(gv(r,"rt")),m,m[0]?num(rvv):0,m[0]?0:ch,
+    {kd:kdv(kv)??date,sub:ts(gv(r,"sub")),ag:nn(gv(r,"ag")),coc:ts(gv(r,"coc")),rv:nn(rvv),chn:ch,tsn:S(gv(r,"ts"))}])}
+  if(!rec.length)return null;
+  const F=["dates","area","shop","emp","type","rsn","otype","oname","pkg","rtype"],o={},ix=F.map((f,i)=>{const v=[...new Set(rec.map(r=>r[i]))].sort();o[f]=v;return new Map(v.map((x,j)=>[x,j]))}),g=new Map(),tl=[...new Set(rec.map(r=>r[13].tsn))].sort(),tix=new Map(tl.map((x,j)=>[x,j]));o.tshop=tl;o.hasAge=rec.some(r=>r[13].ag!=null);
+  for(const r of rec){const k=F.map((_,i)=>ix[i].get(r[i])),ab=abOf(r[13].ag),key=k.join("|")+"|"+tix.get(r[13].tsn)+"|"+ab;let a=g.get(key);if(!a)g.set(key,a=[...k,0,0,0,0,0,0,tix.get(r[13].tsn),ab]);
+   a[10]+=r[10][0];a[11]+=r[10][1];a[12]+=r[10][2];a[13]+=r[11];if(r[10][1])a[14]+=r[12];if(r[10][2])a[15]+=r[12]}
+  o.rows=[...g.values()].map(a=>a.map((x,i)=>i>12?Math.round(x*100)/100:x));o.det=rec.map(r=>{const k=F.map((_,i)=>ix[i].get(r[i]));return{d:k[0],a:k[1],s:k[2],e:k[3],t:k[4],rn:k[5],ot:k[6],on:k[7],pk:k[8],rt:k[9],st:r[10][0]?"sv":r[10][1]?"un":"pp",ts:tix.get(r[13].tsn),ab:abOf(r[13].ag),...r[13]}});
+  const areaAny=has("aww")||has("adb")||has("ar");
+  o.rep={rows:rows.length,used:rec.length,skipped,areas:o.area.length,fields:[["วันที่ (RET_DT)","dt",1],["สถานะ (RET_STTS)","st",1],["Area (AREA_WW)","aww",!areaAny],["Area DB7 (AREA_DB7)","adb",0],["Area ทั่วไป (AREA)","ar",0],["สาขา (SHOP_NAME)","shop",1],["พนักงาน (EMP_NAME)","emp",1],["SHOP_TYPE","type",1],["Type Shop","ts",0],["เหตุผล (RET_RSN_DESC)","rsn",1],["OFFER_TYPE","ot",0],["OFFER_NAME","on",0],["แพ็กเกจ (CURR_PKG_NM)","pk",1],["RET_TYPE_DESC","rt",1],["REV_SAVE","rv",1],["Churn","ch",1],["AGING_DAY","ag",0],["SUBR_NUMB","sub",0],["RET_COC_DESC","coc",0]].map(([lb,key,core])=>({lb,src:key==="dt"?(src("dt")||src("kd")):key==="emp"?(src("emp")||src("emp2")):src(key),n:key==="dt"?(hit.dt||hit.kd||0):key==="emp"?(hit.emp||0)+(hit.emp2||0):(hit[key]||0),core:!!core,rowsAll:key==="dt"||key==="st"}))};
+  return o}
 const val=id=>$(id).value===""?null:+$(id).value;
 function fill(id,k,b){const el=$(id),cur=el.value,u=[...new Set(b.map(x=>x[k]))].sort((x,y)=>nm(k,x).localeCompare(nm(k,y)));
  el.innerHTML='<option value="">ทั้งหมด</option>'+u.map(i=>`<option value="${i}">${esc(nm(k,i))}</option>`).join("");el.value=u.map(String).includes(cur)?cur:""}
@@ -9966,11 +10005,20 @@ $("view").onchange=render;$("q").oninput=render;$("minr").oninput=render;$("rs")
 $("th").onclick=e=>{const k=e.target.dataset.k;if(!k||k==="bar")return;if(sk===k)sd=-sd;else{sk=k;sd=k==="name"?-1:1}render()};
 $("tbd").oninput=e=>{const i=e.target;if(!i.classList.contains("ti"))return;const v=parseFloat(i.value.replace(/,/g,""));TG[i.dataset.k]=isFinite(v)&&v>0?v:null;
  const tr=i.closest("tr"),p=TG[i.dataset.k]?tr.dataset.of/TG[i.dataset.k]*100:null,c=tr.querySelector(".po");c.textContent=pf(p);c.className="po "+(p==null?"":p>100?"bad":"ok")};
+function pickSheet(wb){const X=XLSX.utils,isH=h=>SPEC.st.some(n=>h.includes(n))&&(SPEC.dt.some(n=>h.includes(n))||SPEC.kd.some(n=>h.includes(n)));
+ for(const n of wb.SheetNames){const ws=wb.Sheets[n];if(!ws||!ws["!ref"])continue;const rg=X.decode_range(ws["!ref"]),lim=X.encode_range({s:rg.s,e:{r:Math.min(rg.e.r,rg.s.r+19),c:rg.e.c}}),
+  top=X.sheet_to_json(ws,{header:1,defval:null,range:lim,blankrows:true});
+  for(let i=0;i<top.length;i++)if(isH((top[i]||[]).map(nk)))return{name:n,rows:X.sheet_to_json(ws,{defval:null,range:rg.s.r+i})}}
+ return null}
+let REP=null,LASTUP=null;
 $("up").onchange=async e=>{const f=e.target.files[0];if(!f||$("upbox").hidden)return;
  if(!window.XLSX){alert("โหลดไลบรารีอ่าน Excel ไม่สำเร็จ (ต้องเชื่อมต่ออินเทอร์เน็ต)");return}
- try{const wb=XLSX.read(await f.arrayBuffer(),{type:"array",cellDates:true}),d=fromRaw(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:null}));
-  if(!d){alert("ไม่พบคอลัมน์ RET_DT / RET_STTS หรือไม่มีข้อมูลสถานะ Retain / Unretain / Post to Pre");return}
-  D=d;TG={};load(f.name)}catch(err){alert("อ่านไฟล์ไม่สำเร็จ: "+err.message)}e.target.value=""};
+ try{const wb=XLSX.read(await f.arrayBuffer(),{type:"array",cellDates:true}),ps=pickSheet(wb);
+  if(!ps){alert("ไม่พบชีตที่มีคอลัมน์ RET_STTS และ RET_DT (หรือ RET_TM_KEY_DAY) ในไฟล์นี้ — ตรวจชื่อหัวคอลัมน์ในแถวบนสุดของข้อมูล");return}
+  const d=fromRaw(ps.rows);
+  if(!d){alert("ไม่พบแถวข้อมูลที่ใช้ได้ (สถานะต้องเป็น Retain / Unretain / Post to Pre และมีวันที่)");return}
+  REP=d.rep;REP.sheet=ps.name;delete d.rep;D=d;TG={};LASTUP={file:f.name,D:d};load(f.name);showRep();$("ghmsg").textContent=""}catch(err){alert("อ่านไฟล์ไม่สำเร็จ: "+err.message)}
+ e.target.value=""};
 
 
 const TSC={"Hall":"#2563eb","Matching":"#0891b2","Non Matching":"#7c3aed","COCO":"#db2777","(ไม่ระบุ)":"#94a3b8"},TSF=["#ea580c","#65a30d","#0d9488","#9333ea"],tc=k=>TSC[nm("ts",k)]||TSF[k%TSF.length];let TSM="amt";
@@ -10050,7 +10098,7 @@ function detail(){const a=detRows(),col=DC.find(c=>c[0]===dsk)||DC[0];
  if(DF.ag!=null)ch.push(`<span class="chip" data-x="ag" tabindex="0" role="button">AGING_DAY: ${AB[DF.ag][0]} ✕</span>`);
  $("dchips").innerHTML=ch.join("");
  const miss=[["sub","SUBR_NUMB"],["ag","AGING_DAY"],["coc","RET_COC_DESC"],["rv","REV_SAVE"]].filter(c=>DET.length&&DET.every(x=>x[c[0]]==null)).map(c=>c[1]);
- $("dnote").textContent=D.sim?`ข้อมูลตัวอย่างที่ฝังในไฟล์เป็นข้อมูลสรุป จึงยังไม่มี ${miss.join(", ")} (แสดง –) และ RET_TM_KEY_DAY แสดงเป็นวันที่ RET_DT · อัปโหลดไฟล์ข้อมูลดิบ (.xlsx / .csv) เพื่อแสดงครบทุกคอลัมน์`:(miss.length?`ไฟล์ที่อัปโหลดไม่มีคอลัมน์ ${miss.join(", ")} (แสดง –)`:"")}
+ $("dnote").textContent=D.sim?`ข้อมูลชุดนี้เป็นข้อมูลสรุป (ไม่มีรายละเอียดรายเบอร์) จึงไม่มี ${miss.join(", ")} (แสดง –) และ RET_TM_KEY_DAY แสดงเป็นวันที่ RET_DT ${$("upbox").hidden?"":"· อัปโหลดไฟล์ข้อมูลดิบ (.xlsx / .csv) เพื่อแสดงครบทุกคอลัมน์"}`:(miss.length?`ไฟล์ที่อัปโหลดไม่มีคอลัมน์ ${miss.join(", ")} (แสดง –)`:"")}
 function goDet(){$("det").scrollIntoView({behavior:"smooth",block:"start"})}
 function setDates(a,b){$("fd1").value=a;$("fd2").value=b;cascade();render()}
 function openRec(i){const x=DET[i];if(!x)return;
@@ -10081,7 +10129,51 @@ $("dchips").onclick=e=>{const c=e.target.closest(".chip");if(!c)return;const x=c
 $("mx").onclick=closeRec;$("mo").onclick=e=>{if(e.target===$("mo"))closeRec()};
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("mo").hidden){closeRec();return}
  if((e.key==="Enter"||e.key===" ")&&e.target.matches&&e.target.matches(".kpi[tabindex],.ar[tabindex],.tr[tabindex],.pk[tabindex],.dl div[tabindex],#tbd tr[tabindex],#dtb tr[tabindex],#tstb tr[tabindex],.chip[tabindex]")){e.preventDefault();e.target.click()}});
-function applyHash(){$("upbox").hidden=!/^#update\/?$/i.test(location.hash)}
+
+function showRep(){if(!REP)return;const R0=REP,bad=R0.fields.filter(f=>f.core&&(!f.src||!f.n)),
+ den=f=>f.rowsAll?R0.rows:R0.used;
+ $("repd").hidden=false;
+ $("repsum").textContent=`ชีต "${R0.sheet}" · อ่านได้ ${fmt(R0.used)} จาก ${fmt(R0.rows)} แถว`+(R0.skipped?` · ข้าม ${fmt(R0.skipped)} แถว (สถานะไม่ใช่ Retain / Unretain / Post to Pre หรืออ่านวันที่ไม่ได้)`:"")+` · พบ Area ${fmt(R0.areas)} ค่า`;
+ $("reptb").innerHTML='<thead><tr><th class="tl">ข้อมูลที่ใช้</th><th class="tl">คอลัมน์ในไฟล์ที่แมปได้</th><th>แถวที่มีค่า</th></tr></thead><tbody>'+
+  R0.fields.map(f=>`<tr><td class="tl">${esc(f.lb)}</td><td class="tl ${f.core&&!f.src?"bad":""}">${f.src?esc(f.src):(f.core?"⚠ ไม่พบคอลัมน์นี้":"– ไม่มี")}</td><td class="${f.src&&!f.n&&f.core?"bad":""}">${f.src?fmt(f.n)+" / "+fmt(den(f))+(f.n?"":f.core?" ⚠ ว่างทั้งหมด":" (ว่าง)"):"–"}</td></tr>`).join("")+"</tbody>";
+ $("updst").textContent=bad.length?"⚠ คอลัมน์สำคัญที่แมปไม่ได้หรือว่างทั้งหมด: "+bad.map(f=>f.lb).join(", "):"✓ แมปคอลัมน์สำคัญครบ"}
+const b64=s=>{const u=new TextEncoder().encode(s);let b="";for(let i=0;i<u.length;i+=32768)b+=String.fromCharCode.apply(null,u.subarray(i,i+32768));return btoa(b)},
+ DETC=["d","a","s","e","t","rn","ot","on","pk","rt","ts","ab","st","kd","sub","ag","coc","rv","chn"];
+function pubPayload(inc){const d={...LASTUP.D};delete d.det;delete d.rep;delete d.sim;const o={v:1,updatedAt:new Date().toISOString(),file:LASTUP.file,D:d};
+ if(inc&&LASTUP.D.det)o.det={cols:DETC,rows:LASTUP.D.det.map(x=>DETC.map(c=>x[c]??null))};return o}
+function expandDet(p){return p.rows.map(r=>{const o={};p.cols.forEach((c,i)=>o[c]=r[i]);return o})}
+const ghLS=()=>{try{return JSON.parse(localStorage.getItem("dtacGH")||"{}")}catch(e){return{}}};
+function updInit(){const g=ghLS();let repo=$("ghr").value||g.repo||"";
+ if(!repo&&/\.github\.io$/i.test(location.hostname)){const o=location.hostname.split(".")[0],seg=location.pathname.split("/").filter(Boolean)[0];repo=o+"/"+(seg&&!/\.html?$/i.test(seg)?seg:o+".github.io")}
+ $("ghr").value=repo;if(!$("ghp").dataset.set){$("ghp").value=g.path||"data.json";$("ghp").dataset.set=1}if(g.tok&&!$("ght").value){$("ght").value=g.tok;$("ghrem").checked=true}}
+function ghErr(s,j){return s===401?"Token ไม่ถูกต้องหรือหมดอายุ":s===403?"Token ไม่มีสิทธิ์เขียน repo นี้ (ต้องเป็น Contents: Read and write) หรือถูกจำกัดการเรียกใช้":s===404?"ไม่พบ repo นี้ หรือ Token ไม่มีสิทธิ์เข้าถึง repo นี้":(s===409||s===422)?"ไฟล์ถูกแก้ไขระหว่างบันทึก ลองกดบันทึกอีกครั้ง"+(j&&j.message?" ("+j.message+")":""):(j&&j.message)||("HTTP "+s)}
+$("ghsave").onclick=async()=>{const msg=x=>$("ghmsg").textContent=x;
+ if(!LASTUP){msg("ยังไม่ได้อัปโหลดไฟล์ — กด Upload File Excel ก่อน จึงจะบันทึกได้");return}
+ const repo=$("ghr").value.trim(),path=($("ghp").value.trim()||"data.json").replace(/^\/+/,""),tok=$("ght").value.trim(),inc=$("ghdet").checked;
+ if(!/^[\w.-]+\/[\w.-]+$/.test(repo)){msg("กรอก repo ให้ถูกต้องในรูปแบบ owner/repo");return}
+ if(!tok){msg("กรอก GitHub Token");return}
+ if(inc&&!confirm("ไฟล์ที่เผยแพร่จะมีรายละเอียดรายเบอร์ (เช่น SUBR_NUMB) ถ้า repo เป็น Public ทุกคนจะดาวน์โหลดได้\\nยืนยันบันทึก?"))return;
+ $("ghsave").disabled=true;msg("กำลังบันทึก…");
+ try{const body=JSON.stringify(pubPayload(inc)),H={Accept:"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28",Authorization:"Bearer "+tok},
+  enc=s=>s.split("/").map(encodeURIComponent).join("/"),base="https://api.github.com/repos/"+repo+"/contents",dir=path.includes("/")?path.slice(0,path.lastIndexOf("/")):"";
+  let sha=null;const g=await fetch(dir?base+"/"+enc(dir):base,{headers:H,cache:"no-store"});
+  if(g.ok){const l=await g.json();const h=Array.isArray(l)?l.find(x=>x.path===path):null;if(h)sha=h.sha}else if(g.status===401||g.status===403)throw new Error(ghErr(g.status));
+  const pr=await fetch(base+"/"+enc(path),{method:"PUT",headers:{...H,"Content-Type":"application/json"},body:JSON.stringify({message:"Update dashboard data ("+LASTUP.file+") "+new Date().toISOString(),content:b64(body),...(sha?{sha}:{})})}),pj=await pr.json().catch(()=>({}));
+  if(!pr.ok)throw new Error(ghErr(pr.status,pj));
+  try{localStorage.setItem("dtacGH",JSON.stringify({repo,path,...($("ghrem").checked?{tok}:{})}))}catch(e){}
+  msg(`บันทึกแล้ว ✓ ${Math.round(body.length/1024).toLocaleString("en-US")} KB${inc?" (รวมรายละเอียดรายเบอร์)":""} · ผู้ชมจะเห็นข้อมูลใหม่หลัง GitHub Pages deploy ประมาณ 1–2 นาที (ให้กดรีเฟรชหน้า)`)}
+ catch(err){msg("บันทึกไม่สำเร็จ: "+(err.message==="Failed to fetch"?"เชื่อมต่อ GitHub ไม่ได้ (ตรวจอินเทอร์เน็ต)":err.message))}
+ $("ghsave").disabled=false};
+$("ghdl").onclick=()=>{if(!LASTUP){$("ghmsg").textContent="ยังไม่ได้อัปโหลดไฟล์ — กด Upload File Excel ก่อน";return}
+ if($("ghdet").checked&&!confirm("ไฟล์ที่ดาวน์โหลดจะมีรายละเอียดรายเบอร์ (เช่น SUBR_NUMB) ยืนยัน?"))return;
+ const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(pubPayload($("ghdet").checked))],{type:"application/json"}));a.download="data.json";document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);
+ $("ghmsg").textContent="ดาวน์โหลด data.json แล้ว — นำไปวางทับไฟล์ data.json ใน repo (Add file → Upload files)"};
+async function boot(){$("fn").textContent="กำลังโหลดข้อมูลล่าสุด…";
+ if(location.protocol==="file:"){load("ข้อมูลตัวอย่าง: Performance_DTAC_8_Nov_2026.xlsx");return}
+ try{const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),8000),r=await fetch("data.json?v="+Date.now(),{cache:"no-store",signal:ac.signal});clearTimeout(tm);
+  if(r.ok){const j=await r.json();if(j&&j.v===1&&j.D&&Array.isArray(j.D.rows)&&Array.isArray(j.D.dates)&&j.D.dates.length){D=j.D;if(j.det&&Array.isArray(j.det.rows))D.det=expandDet(j.det);TG={};load("ข้อมูลล่าสุด "+new Date(j.updatedAt).toLocaleString("sv-SE").slice(0,16)+" · "+j.file);return}}}catch(e){}
+ load("ข้อมูลตัวอย่าง: Performance_DTAC_8_Nov_2026.xlsx")}
+function applyHash(){const on=/^#update\/?$/i.test(location.hash);$("upbox").hidden=!on;$("upd").hidden=!on;if(on)updInit()}
 addEventListener("hashchange",applyHash);applyHash();
-load("ข้อมูลตัวอย่าง: Performance_DTAC_8_Nov_2026.xlsx");
+boot();
 </script></body></html>
